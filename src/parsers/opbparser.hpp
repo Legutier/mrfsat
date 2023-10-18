@@ -20,13 +20,16 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <stdexcept>
+#include <set>
 
 namespace mrfsat {
 class OPBParser {
     /*
         BNF Grammar for OPB files
         <equations>    ::= <equation> | <equation> <equations>
-        <equation>     ::= <terms> ">=" <integer> ";"
+        <equation>     ::= <terms> <comparator> <integer> ";"
+        <comparator>   ::= "=" | ">="
         <terms>        ::= <term> | <term> <terms>
         <term>         ::= <sign> <integer> "x" <integer>
         <sign>         ::= "+" | "-"
@@ -37,12 +40,15 @@ class OPBParser {
     public:
         void parseFile(std::ifstream &file_name);
     private:
-        void getEquations(std::string &line);
+        // element parsers
         void getEquation(std::string &line);
-        void getTerms(std::string &line);
-        void getTerm(std::string &line);
-        void getSign(std::string &line);
+        int getTerms(std::string &line);
+        int getTerm(std::string &line);
+        int getSign(std::string &line);
         int getInteger(std::string &line);
-        void getDigit(std::string &line);
+        int getComparator(std::string &line);
+        int getDigit(std::string &line);
+        // parsing helpers
+        int stop;
 };
 }
