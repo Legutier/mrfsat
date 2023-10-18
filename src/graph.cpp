@@ -24,4 +24,18 @@ namespace mrfsat {
         constraint_coefficients[constraint_id] = constraint_coefficient;
     }
 
+    void Graph::buildFromConstraints() {
+        std::unordered_map<int, NodeMap> new_adjacency_list;
+        for (auto& [constraint_node, lit_nodes]: adjacency_list) {
+            for (auto& [lit_node, value]: lit_nodes) {
+                new_adjacency_list[lit_node][constraint_node + n_lits] = value / constraint_coefficients[constraint_node];
+                new_adjacency_list[constraint_node + n_lits][lit_node] = value / constraint_coefficients[constraint_node];
+            }
+        }
+        adjacency_list = new_adjacency_list;
+    }
+
+    void Graph::updateLiteralsAmount(int new_number) {
+        n_lits = std::max(n_lits, new_number);
+    }
 }

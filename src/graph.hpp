@@ -22,8 +22,13 @@
 
 
 namespace mrfsat {
+
+using NodeMap = std::unordered_map<int, long double>;
 class Graph {
     public:
+        Graph() {
+            n_lits = 0;
+        }
         void addVariableToConstraint(int constraint_id, std::pair <int, int> variable_data);
         void addConstraintCoefficient(int constraint_id, int constraint_coefficient);
         void showGraph() {
@@ -36,8 +41,11 @@ class Graph {
                 }
             }
         }
+        void buildFromConstraints();
+        void updateLiteralsAmount(int new_number);
     private:
-        std::unordered_map<int,  std::unordered_map<int, long double> > adjacency_list;
+        std::unordered_map<int, NodeMap> adjacency_list;
         std::unordered_map<int, int> constraint_coefficients;
+        int n_lits;
 };
 }

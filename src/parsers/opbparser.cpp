@@ -76,7 +76,9 @@ int OPBParser::getTerm(std::string &line) {
         int coefficient = getInteger(line);
         if (line[++stop] != 'x') throw std::invalid_argument("Syntax error: Term must have variable x.");
         int variable = getInteger(line);
-        graph.addVariableToConstraint(line_number, std::pair<int, int> (variable, sign * coefficient));
+        variable = (sign > 0) ? variable : variable * 2;
+        graph.updateLiteralsAmount(variable);
+        graph.addVariableToConstraint(line_number, std::pair<int, int> (variable, coefficient));
         return 0;
     } catch (std::out_of_range const& ex) {
         return 1;
