@@ -14,20 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-#pragma once
-#include <iostream>
-#include <fstream>
-#include <string>
 #include "graph.hpp"
-
 namespace mrfsat {
-class FileReader {
-    public:
-        void parseFile(std::string file_name);
-        Graph graph;
-    private:
-        void parseOPBFile(std::string file_name);
-        std::string getFileExtension(const std::string& filename);
-};
+    void Graph::addVariableToConstraint(int constraint_id, std::pair<int, int> variable_data) {
+        adjacency_list[constraint_id][variable_data.first] = variable_data.second;
+    }
+
+    void Graph::addConstraintCoefficient(int constraint_id, int constraint_coefficient) {
+        constraint_coefficients[constraint_id] = constraint_coefficient;
+    }
+
 }

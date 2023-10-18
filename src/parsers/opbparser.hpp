@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <set>
+#include "graph.hpp"
 
 namespace mrfsat {
 class OPBParser {
@@ -38,6 +39,9 @@ class OPBParser {
         <comment>      ::= "*"
     */
     public:
+        OPBParser(Graph& g) : graph(g) {
+            line_number = 1;
+        }
         void parseFile(std::ifstream &file_name);
     private:
         // element parsers
@@ -50,5 +54,8 @@ class OPBParser {
         int getDigit(std::string &line);
         // parsing helpers
         int stop;
+        int line_number;
+        // graph
+        Graph& graph;
 };
 }

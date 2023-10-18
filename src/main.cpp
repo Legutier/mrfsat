@@ -25,5 +25,6 @@ int main(int argc, char* argv[]) {
     }
     mrfsat::FileReader reader;
     reader.parseFile(argv[1]);
+    reader.graph.showGraph();
     return 0;
 }

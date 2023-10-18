@@ -29,6 +29,7 @@ void OPBParser::parseFile(std::ifstream &file_name) {
         }
         stop = -1;
         getEquation(line_stream);
+        line_number++;
     }
 }
 
@@ -36,9 +37,13 @@ void OPBParser::getEquation(std::string &line) {
     //<equation> ::= <terms> <comparator> <integer> ";"
     getTerms(line);
     getComparator(line);
-    std::cout << " | ";
-    int rhc = getInteger(line);
-    std::cout << rhc << std::endl;
+    int sign = 1;
+    try {
+        sign = getSign(line);   
+    } catch (std::out_of_range) {
+    }
+    int constraint_coefficient = sign * getInteger(line);
+    graph.addConstraintCoefficient(line_number, constraint_coefficient);
     if (line[++stop] != ';') throw std::invalid_argument("Syntax error: expected ;"); 
 }
 
@@ -69,10 +74,9 @@ int OPBParser::getTerm(std::string &line) {
     try {
         int sign = getSign(line);
         int coefficient = getInteger(line);
-        std::cout << ((sign > 0)? '+': '-') << coefficient; 
         if (line[++stop] != 'x') throw std::invalid_argument("Syntax error: Term must have variable x.");
         int variable = getInteger(line);
-        std::cout << "x" << variable ;
+        graph.addVariableToConstraint(line_number, std::pair<int, int> (variable, sign * coefficient));
         return 0;
     } catch (std::out_of_range const& ex) {
         return 1;

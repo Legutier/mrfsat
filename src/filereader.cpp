@@ -46,7 +46,7 @@ void FileReader::parseOPBFile(std::string file_name) {
         std::cerr << "Failed to open the file." << std::endl;
         return;
     }
-    OPBParser parser;
+    OPBParser parser(graph);
     parser.parseFile(file_stream);
     return;
 }
