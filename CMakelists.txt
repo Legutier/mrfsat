@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 project(mrfsat CXX)  # replace 'MyProjectName' with your desired project name
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add executable
@@ -13,6 +13,7 @@ add_executable(mrfsat
     src/main.cpp
     src/parsers/opbparser.cpp
     src/filereader.cpp
+    src/graph.cpp
 )
 
 # Include directories
