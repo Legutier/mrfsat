@@ -57,5 +57,6 @@ class OPBParser {
         int line_number;
         // graph
         Graph& graph;
+        int max_variable_id;
 };
 }

@@ -31,7 +31,8 @@ void OPBParser::parseFile(std::ifstream &file_name) {
         getEquation(line_stream);
         line_number++;
     }
-    graph.setConstraintsNumber(line_number);
+    graph.setConstraintsNumber(line_number - 1);
+    graph.updateLiteralsAmount(max_variable_id * 2);
 }
 
 void OPBParser::getEquation(std::string &line) {
@@ -77,8 +78,10 @@ int OPBParser::getTerm(std::string &line) {
         int coefficient = getInteger(line);
         if (line[++stop] != 'x') throw std::invalid_argument("Syntax error: Term must have variable x.");
         int variable = getInteger(line);
-        variable = (sign > 0) ? variable : variable * 2;
-        graph.updateLiteralsAmount(variable);
+        max_variable_id = std::max(variable, max_variable_id);
+        if (sign < 0){ 
+            variable = variable * 2;
+        }
         graph.addVariableToConstraint(line_number, std::pair<int, int> (variable, coefficient));
         return 0;
     } catch (std::out_of_range const& ex) {

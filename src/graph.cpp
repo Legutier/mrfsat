@@ -100,7 +100,7 @@ namespace mrfsat {
 
     void Graph::calculateGraphData() {
         calculateMRFClusters();
-        std::cout << clusters.size() << "," << ((double)clusters.size())/n_constraints << ",";
+        std::cout << clusters.size() << "," << n_constraints << "," << n_lits / 2 << ",";
         std::pair<double, double> variance_diff = calculateVariance();
         std::cout << variance_diff.first << "," << variance_diff.second << ",";
         std::cout << std::endl;
