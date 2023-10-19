@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     }
     mrfsat::FileReader reader;
     reader.parseFile(argv[1]);
-    std::cout << std::filesystem::path(argv[1]).filename();
+    std::cout << std::filesystem::path(argv[1]).filename() << ",";
     reader.graph.buildFromConstraints();
     reader.graph.calculateGraphData();
     return 0;
