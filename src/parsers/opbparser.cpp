@@ -31,6 +31,7 @@ void OPBParser::parseFile(std::ifstream &file_name) {
         getEquation(line_stream);
         line_number++;
     }
+    graph.setConstraintsNumber(line_number);
 }
 
 void OPBParser::getEquation(std::string &line) {

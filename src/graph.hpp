@@ -19,7 +19,7 @@
 
 #include <map>
 #include <iostream>
-
+#include <numeric>
 
 namespace mrfsat {
 
@@ -43,9 +43,16 @@ class Graph {
         }
         void buildFromConstraints();
         void updateLiteralsAmount(int new_number);
+        void setConstraintsNumber(int new_n_constraints) {n_constraints = new_n_constraints;}
+        void calculateGraphData();
+        std::vector<int> community_nodes;
+        std::unordered_map<int, std::vector<int> > clusters;
     private:
+        void calculateMRFClusters();
+        std::pair<double, double> calculateVariance();
         std::unordered_map<int, NodeMap> adjacency_list;
         std::unordered_map<int, int> constraint_coefficients;
         int n_lits;
+        int n_constraints;
 };
 }
