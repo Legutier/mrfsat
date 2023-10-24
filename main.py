@@ -1,5 +1,13 @@
+import joblib
+import numpy
 import os
+
 import sys
+
+
+classifier = joblib.load('models/random_forest_model.joblib')
+
+FEATURES = ["average_freedom", "std_dev_freedom", "ratio"]
 
 
 def get_predicting_data(filename: str) -> dict[str, int | float | str]:
@@ -12,20 +20,23 @@ def get_predicting_data(filename: str) -> dict[str, int | float | str]:
     mapping["total_variables"] = int(mapping["total_variables"])
     mapping["total_clauses"] = int(mapping["total_clauses"])
     mapping["total_clusters"] = int(mapping["total_clusters"])
+    mapping["variable_clustesr"] = int(mapping["variable_clusters"])
+    mapping["ratio"] = mapping["variable_clustesr"] / mapping["total_clusters"]
     return mapping
 
 
 def main() -> None:
     """
-    receive filename from sys arg and execute the program that will execute this file
+    receives filename from sys arg and execute the program that will execute this file
     """
     if len(sys.argv) < 2:
         print("Error: no filename provided")
         return
     filename = sys.argv[1]
     predicting_data_mapping = get_predicting_data(filename)
-    print(predicting_data_mapping)
-    return
+    feature_vector = numpy.array([predicting_data_mapping[feature] for feature in FEATURES]).reshape(1, -1)
+    prediction = classifier.predict(feature_vector)
+    print("Prediction:", prediction[0])
 
 
 if __name__ == "__main__":
