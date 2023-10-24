@@ -1,17 +1,21 @@
 FROM ubuntu:20.04
-ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
-    g++ \
-    cmake \
-    libboost-all-dev \
-    && rm -rf /var/lib/apt/lists/*
+ARG DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /usr/src/app
 
-COPY ./src ./src
-COPY CMakeLists.txt .
-COPY entrypoint.sh /usr/src/app/
+RUN apt-get update \
+    && apt-get install -y g++ \
+    && apt-get install -y make \
+    && apt-get install -y build-essential cmake --no-install-recommends
 
-RUN mkdir build && cd build && cmake .. && make
-ENTRYPOINT [ "build/mrfsat" ]
+WORKDIR /
+RUN mkdir mrfsat/
+ADD  . /mrfsat/
+WORKDIR /mrfsat/build
+
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release
+RUN make
+
+WORKDIR /mrfsat
+
+ENTRYPOINT [ "/mrfsat/build/mrfsat" ]
