@@ -1,13 +1,20 @@
 import joblib
 import numpy
 import os
-
 import sys
+import warnings
 
+from sklearn.exceptions import InconsistentVersionWarning
 
-classifier = joblib.load('models/random_forest_model.joblib')
 
 FEATURES = ["average_freedom", "std_dev_freedom", "ratio"]
+
+
+def load_classfier():
+    warnings.filterwarnings("ignore", module="sklearn")
+    warnings.filterwarnings("ignore", category=InconsistentVersionWarning, module="sklearn")
+    classifier = joblib.load('models/random_forest_model.joblib')
+    return classifier
 
 
 def get_predicting_data(filename: str) -> dict[str, int | float | str]:
@@ -25,19 +32,21 @@ def get_predicting_data(filename: str) -> dict[str, int | float | str]:
     return mapping
 
 
-def main() -> None:
+def get_features_from_instance(filename: str) -> numpy.array:
     """
     receives filename from sys arg and execute the program that will execute this file
     """
-    if len(sys.argv) < 2:
-        print("Error: no filename provided")
-        return
-    filename = sys.argv[1]
     predicting_data_mapping = get_predicting_data(filename)
     feature_vector = numpy.array([predicting_data_mapping[feature] for feature in FEATURES]).reshape(1, -1)
-    prediction = classifier.predict(feature_vector)
-    print("Prediction:", prediction[0])
+    return feature_vector
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 2:
+        print("Error: no filename provided")
+        exit(0)
+    filename = sys.argv[1]
+    classifier = load_classfier()
+    feature_vector = get_features_from_instance(filename)
+    prediction = classifier.predict(feature_vector)
+    print("Prediction:", prediction[0])
