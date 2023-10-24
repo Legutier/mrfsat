@@ -22,6 +22,7 @@
 #include <vector>
 #include <iostream>
 #include <numeric>
+#include <cmath>
 
 namespace mrfsat {
 
