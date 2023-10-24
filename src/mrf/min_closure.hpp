@@ -1,4 +1,8 @@
 /*
+Copyright (c) Lukas Esteban Gutierrez Lisboa
+
+Parts of the code were copied or adapted from Pseudoflow Parametric Maximum Flow Solver.
+
 The source code is subject to the following academic license. Note this is not an open source license.
 
 Copyright © 2001. The Regents of the University of California (Regents). All Rights Reserved.
@@ -8,6 +12,7 @@ research, and not-for-profit purposes, without fee and without a signed licensin
 this paragraph and the following two paragraphs appear in all copies, modifications, and distributions.
 Contact The Office of Technology Licensing, UC Berkeley, 2150 Shattuck Avenue, Suite 510, Berkeley, CA 94720-1620, (510) 643-7201,
 for commercial licensing opportunities.
+
 Created by Bala Chandran and Dorit S. Hochbaum, Department of Industrial Engineering and Operations Research, University of California, Berkeley.
 
 IN NO EVENT SHALL REGENTS BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF REGENTS HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
