@@ -38,7 +38,7 @@ void OPBParser::parseFile(std::ifstream &file_name) {
 void OPBParser::getEquation(std::string &line) {
     //<equation> ::= <terms> <comparator> <integer> ";"
     getTerms(line);
-    getComparator(line);
+    int compare_mode = getComparator(line);
     int sign = 1;
     try {
         sign = getSign(line);   
@@ -46,13 +46,16 @@ void OPBParser::getEquation(std::string &line) {
     }
     int constraint_coefficient = sign * getInteger(line);
     graph.addConstraintCoefficient(line_number, constraint_coefficient);
+    if (compare_mode == 1){
+        graph.NormalizeEqualConstraint(line_number);
+    }
     if (line[++stop] != ';') throw std::invalid_argument("Syntax error: expected ;"); 
 }
 
 int OPBParser::getComparator(std::string &line) {
     //<comparator>   ::= "=" | ">="
     if (line[++stop] == '=') {
-        return 0;
+        return 1;
     } else if (line[stop] == '>' && line[stop + 1] == '=') {
         stop++;
         return 0;
@@ -80,7 +83,7 @@ int OPBParser::getTerm(std::string &line) {
         int variable = getInteger(line);
         max_variable_id = std::max(variable, max_variable_id);
         if (sign < 0){ 
-            variable = variable * 2;
+            variable = -1 * variable;
         }
         graph.addVariableToConstraint(line_number, std::pair<int, int> (variable, coefficient));
         return 0;

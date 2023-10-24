@@ -30,10 +30,38 @@ namespace mrfsat {
 
     void Graph::buildFromConstraints() {
         std::unordered_map<int, NodeMap> new_adjacency_list;
+        int normalizer = 0;
         for (auto& [constraint_node, lit_nodes]: adjacency_list) {
+             auto it = normalization_marks.find(constraint_node);
+            if (it != normalization_marks.end() && it->second == 1){
+                for (const auto& pair : lit_nodes) {
+                    normalizer += pair.second;
+                }
+                normalizer -= constraint_coefficients[constraint_node];
+                to_normalize_amount--;
+                n_constraints += 1;
+            }
             for (auto& [lit_node, value]: lit_nodes) {
-                new_adjacency_list[lit_node][constraint_node + n_lits] = value / constraint_coefficients[constraint_node];
-                new_adjacency_list[constraint_node + n_lits][lit_node] = value / constraint_coefficients[constraint_node];
+                int graph_node;
+                auto it = normalization_marks.find(constraint_node);
+                if (it != normalization_marks.end() && it->second == 1) {
+                    int graph_node_normalized;
+                    if (lit_node < 0) {
+                        graph_node_normalized = -1 * lit_node;
+                    } else {
+                        graph_node_normalized = lit_node + n_lits/2;
+                    }
+                    new_adjacency_list[graph_node_normalized][constraint_node + n_lits + to_normalize_amount] = value / (normalizer);
+                    new_adjacency_list[constraint_node + n_lits + to_normalize_amount][graph_node_normalized] = value / (normalizer);
+                }
+                if (lit_node < 0) {
+                    graph_node = -1 * lit_node + n_lits/2;
+                } else {
+                    graph_node = lit_node;
+                }
+
+                new_adjacency_list[graph_node][constraint_node + n_lits] = value / constraint_coefficients[constraint_node];
+                new_adjacency_list[constraint_node + n_lits][graph_node] = value / constraint_coefficients[constraint_node];
             }
         }
         adjacency_list = new_adjacency_list;
@@ -96,7 +124,7 @@ namespace mrfsat {
         double sq_sum = std::inner_product(ratios.begin(), ratios.end(), ratios.begin(), 0.0);
         double stdev = std::sqrt(sq_sum / ratios.size() - mean * mean);
         return std::make_pair(mean, stdev);
-}
+    }
 
     void Graph::calculateGraphData() {
         calculateMRFClusters();
@@ -104,5 +132,10 @@ namespace mrfsat {
         std::pair<double, double> variance_diff = calculateVariance();
         std::cout << variance_diff.first << "," << variance_diff.second << ",";
         std::cout << std::endl;
+    }
+
+    void Graph::NormalizeEqualConstraint(int constraint_id) {
+        to_normalize_amount++;
+        normalization_marks[constraint_id] = 1;        
     }
 }

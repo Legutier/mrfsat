@@ -28,6 +28,7 @@ class Graph {
     public:
         Graph() {
             n_lits = 0;
+            to_normalize_amount = 0;
         }
         void addVariableToConstraint(int constraint_id, std::pair <int, int> variable_data);
         void addConstraintCoefficient(int constraint_id, int constraint_coefficient);
@@ -45,6 +46,7 @@ class Graph {
         void updateLiteralsAmount(int new_number);
         void setConstraintsNumber(int new_n_constraints) {n_constraints = new_n_constraints;}
         void calculateGraphData();
+        void NormalizeEqualConstraint(int constraint_id);
         std::vector<int> community_nodes;
         std::unordered_map<int, std::vector<int> > clusters;
     private:
@@ -52,6 +54,8 @@ class Graph {
         std::pair<double, double> calculateVariance();
         std::unordered_map<int, NodeMap> adjacency_list;
         std::unordered_map<int, int> constraint_coefficients;
+        std::unordered_map<int, int> normalization_marks;
+        int to_normalize_amount = 0;
         int n_lits;
         int n_constraints;
 };
