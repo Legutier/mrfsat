@@ -248,7 +248,6 @@ static void graphInput(std::unordered_map<int,  std::unordered_map<int, long dou
 	for(auto& [key, adj_nodes] : adjacency_list) {
 		int l_key = key + 1;
 		for(auto & [adj_node, adj_value]: adj_nodes) {
-			int l_adj_node = adj_node + 1;
 			initializeArc (&arcList[i]);
 			ac = &arcList[i];
 			ac->from = &adjacencyList[key - 1];
@@ -790,31 +789,4 @@ pseudoflowPhase1 (void)
 			processRoot (strongRoot);
 		}
 	}
-}
-
-static void
-freeMemory (void)
-{	
-	int i;
-
-	for (i=0; i<numNodes; ++i)
-	{
-		freeRoot (&strongRoots[i]);
-	}
-
-	free (strongRoots);
-
-	for (i=0; i<numNodes; ++i)
-	{
-		if (adjacencyList[i].outOfTree)
-		{
-			free (adjacencyList[i].outOfTree);
-		}
-	}
-
-	free (adjacencyList);
-
-	free (labelCount);
-
-	free (arcList);
 }

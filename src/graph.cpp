@@ -108,7 +108,7 @@ namespace mrfsat {
         for (int i = 0; i < 2 * n; ++i) {
             communityCountB[community_nodes[i]]++;
         }
-        for (int i = 2 * n; i < community_nodes.size(); ++i) {
+        for (unsigned long i = 2 * n; i < community_nodes.size(); ++i) {
             communityCountA[community_nodes[i]]++;
         }
 
