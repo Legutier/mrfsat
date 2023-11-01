@@ -121,8 +121,11 @@ namespace mrfsat {
         // return average ratio
         double sum = std::accumulate(ratios.begin(), ratios.end(), 0.0);
         double mean = sum / ratios.size();
-        double sq_sum = std::inner_product(ratios.begin(), ratios.end(), ratios.begin(), 0.0);
-        double stdev = std::sqrt(sq_sum / ratios.size() - mean * mean);
+        double stdev = 0;
+        if (ratios.size() > 1) {
+            double sq_sum = std::inner_product(ratios.begin(), ratios.end(), ratios.begin(), 0.0);
+            stdev = std::sqrt(sq_sum / ratios.size() - mean * mean);
+        }
         return std::make_pair(mean, stdev);
     }
 
