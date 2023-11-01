@@ -26,6 +26,12 @@ void OPBParser::parseFile(std::ifstream &file_name) {
         line_stream.erase(std::remove(line_stream.begin(), line_stream.end(), ' '), line_stream.end());
         if(line_stream[0] == '*') {
             continue;
+        } else if (line_stream.length() == 0) {
+            continue;
+        } else if ("min:" == line_stream.substr(0, 4)) {
+           continue;
+        } else if ("max:" == line_stream.substr(0, 4)) {
+            continue;
         }
         stop = -1;
         getEquation(line_stream);
@@ -61,7 +67,7 @@ int OPBParser::getComparator(std::string &line) {
         return 0;
     } else {
         stop--;
-        throw std::invalid_argument("No support for non-linear constraints"); 
+        throw std::invalid_argument("No support for non-linear constraints " + std::to_string(line_number)); 
     }
 }
 
@@ -101,7 +107,7 @@ int OPBParser::getSign(std::string &line) {
         sign = 1;
     } else {
         stop --;
-        throw std::out_of_range("No support for non-linear constraints. Expected +/-");
+        throw std::out_of_range("No support for non-linear constraints. Expected +/-, received " + std::to_string(line_number));
     }
     return sign;
 }
