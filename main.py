@@ -1,8 +1,26 @@
+"""
+    MRFSAT - Copyright (C) 2023  Lukas Esteban Gutierrez Lisboa
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 import joblib
 import numpy
 import os
 import sys
 import warnings
+import argparse
+
 
 from sklearn.exceptions import InconsistentVersionWarning
 
@@ -20,15 +38,17 @@ def load_classfier():
 def get_predicting_data(filename: str) -> dict[str, int | float | str]:
     keys = ("variable_clusters", "total_clusters", "total_clauses", "total_variables", "average_freedom", "std_dev_freedom")
     raw_data = os.popen("build/mrfsat " + filename).read().split(",")
-    print("predicting over", raw_data.pop(0))
+    raw_data.pop(0)
     mapping = {k: v for k, v in zip(keys, raw_data)}
     mapping["average_freedom"] = float(mapping["average_freedom"])
     mapping["std_dev_freedom"] = float(mapping["std_dev_freedom"])
     mapping["total_variables"] = int(mapping["total_variables"])
     mapping["total_clauses"] = int(mapping["total_clauses"])
     mapping["total_clusters"] = int(mapping["total_clusters"])
-    mapping["variable_clustesr"] = int(mapping["variable_clusters"])
-    mapping["ratio"] = mapping["variable_clustesr"] / mapping["total_clusters"]
+    mapping["variable_clusters"] = int(mapping["variable_clusters"])
+    mapping["ratio"] = mapping["variable_clusters"] / mapping["total_clusters"]
+    mapping["variables_per_clusters"] = mapping["total_variables"] / mapping["variable_clusters"]
+    mapping["clauses_per_cluster"] = mapping["total_clauses"] / mapping["total_clusters"]
     return mapping
 
 
@@ -41,12 +61,31 @@ def get_features_from_instance(filename: str) -> numpy.array:
     return feature_vector
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Error: no filename provided")
-        exit(0)
-    filename = sys.argv[1]
+
+def make_prediction(filename: str) -> None:
     classifier = load_classfier()
     feature_vector = get_features_from_instance(filename)
+    if numpy.isnan(feature_vector).any():
+        print("Cant predict on", filename, "NaN values in feature vector")
+        return
     prediction = classifier.predict(feature_vector)
-    print("Prediction:", prediction[0])
+    print(f"Prediction on {filename}:",  prediction[0])
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="mrfsat",
+        description="Predicts the satisfiability of a given pseudo-boolean SAT instance using a trained model",
+    )
+    parser.add_argument("-f", "--file", help = "specify File to be predicted")
+    parser.add_argument("-d", "--dir", help = "Folder with files to predict")
+    args = parser.parse_args()
+    if args.file:
+        make_prediction(args.file)
+    elif args.dir:
+        for file in os.listdir(args.dir):
+            filename = os.path.join(args.dir, file)
+            make_prediction(filename)
+    else:
+        print("Error: no filename provided")
+        exit(0)
