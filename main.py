@@ -25,27 +25,46 @@ import argparse
 from sklearn.exceptions import InconsistentVersionWarning
 
 
-FEATURES = ["average_freedom", "std_dev_freedom", "ratio"]
+FEATURES = [
+    "average_freedom",
+    "std_dev_freedom",
+    "ratio",
+    "average_strength",
+    "std_dev_strength",
+]
+MODEL_NAME = "random_forest_model.joblib"
+DATA_KEYS = (
+    "variable_clusters",
+    "total_clusters",
+    "total_clauses",
+    "total_variables",
+    "average_freedom",
+    "std_dev_freedom",
+    "average_strength",
+    "std_dev_strength",
+)
 
 
 def load_classfier():
     warnings.filterwarnings("ignore", module="sklearn")
     warnings.filterwarnings("ignore", category=InconsistentVersionWarning, module="sklearn")
-    classifier = joblib.load('models/random_forest_model.joblib')
+    classifier = joblib.load(f'models/{MODEL_NAME}')
     return classifier
 
 
 def get_predicting_data(filename: str) -> dict[str, int | float | str]:
-    keys = ("variable_clusters", "total_clusters", "total_clauses", "total_variables", "average_freedom", "std_dev_freedom")
-    raw_data = os.popen("build/mrfsat " + filename).read().split(",")
+    raw_data = os.popen("build/mrfsat " + filename).read()
+    raw_data = raw_data.split(",")
     raw_data.pop(0)
-    mapping = {k: v for k, v in zip(keys, raw_data)}
+    mapping = {k: v for k, v in zip(DATA_KEYS, raw_data)}
     mapping["average_freedom"] = float(mapping["average_freedom"])
     mapping["std_dev_freedom"] = float(mapping["std_dev_freedom"])
     mapping["total_variables"] = int(mapping["total_variables"])
     mapping["total_clauses"] = int(mapping["total_clauses"])
     mapping["total_clusters"] = int(mapping["total_clusters"])
     mapping["variable_clusters"] = int(mapping["variable_clusters"])
+    mapping["average_strength"] = float(mapping["average_strength"])
+    mapping["std_dev_strength"] = float(mapping["std_dev_strength"])
     mapping["ratio"] = mapping["variable_clusters"] / mapping["total_clusters"]
     mapping["variables_per_clusters"] = mapping["total_variables"] / mapping["variable_clusters"]
     mapping["clauses_per_cluster"] = mapping["total_clauses"] / mapping["total_clusters"]
@@ -84,8 +103,11 @@ if __name__ == "__main__":
         make_prediction(args.file)
     elif args.dir:
         for file in os.listdir(args.dir):
-            filename = os.path.join(args.dir, file)
-            make_prediction(filename)
+            try:
+                filename = os.path.join(args.dir, file)
+                make_prediction(filename)
+            except KeyError:
+                continue
     else:
         print("Error: no filename provided")
         exit(0)
