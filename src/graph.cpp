@@ -106,10 +106,10 @@ namespace mrfsat {
         int n = n_lits / 2;
         // Count the frequency of nodes in each community for type A and type B
         for (int i = 0; i < 2 * n; ++i) {
-            communityWeightB[community_nodes[i]] += nodeWeights.at(i);
+            communityCountB[community_nodes[i]]++;
         }
         for (unsigned long i = 2 * n; i < community_nodes.size(); ++i) {
-            communityWeightA[community_nodes[i]] += nodeWeights.at(i);
+            communityCountA[community_nodes[i]]++;
         }
 
         // for each community in B get the proportion of elemnts that are from B and from Aa and calculate the ratio
