@@ -51,17 +51,26 @@ namespace mrfsat {
                     } else {
                         graph_node_normalized = lit_node + n_lits/2;
                     }
-                    new_adjacency_list[graph_node_normalized][constraint_node + n_lits + to_normalize_amount] = std::abs(value / (normalizer));
-                    new_adjacency_list[constraint_node + n_lits + to_normalize_amount][graph_node_normalized] = std::abs(value / (normalizer));
+                    if (normalizer != 0) {
+                        new_adjacency_list[graph_node_normalized][constraint_node + n_lits + to_normalize_amount] = std::abs(value / (normalizer));
+                        new_adjacency_list[constraint_node + n_lits + to_normalize_amount][graph_node_normalized] = std::abs(value / (normalizer));
+                    } else {
+                        new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs((value  + 1) / (normalizer + 1));
+                        new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs((value + 1) /(normalizer + 1));
+                    }
                 }
                 if (lit_node < 0) {
                     graph_node = -1 * lit_node + n_lits/2;
                 } else {
                     graph_node = lit_node;
                 }
-
-                new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs(value / constraint_coefficients[constraint_node]);
-                new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs(value / constraint_coefficients[constraint_node]);
+                if (constraint_coefficients[constraint_node] != 0){ 
+                    new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs(value / constraint_coefficients[constraint_node]);
+                    new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs(value / constraint_coefficients[constraint_node]);
+                } else {
+                    new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs((value  + 1) / (constraint_coefficients[constraint_node] + 1));
+                    new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs((value + 1) /(constraint_coefficients[constraint_node] + 1));
+                }
             }
         }
         adjacency_list = new_adjacency_list;
@@ -169,8 +178,6 @@ namespace mrfsat {
             return acc + (x - mean) * (x - mean);
         }) / ratios.size();
         double stdev = std::sqrt(variance);
-        double c = 10; 
-
         return {mean, stdev};
     }
 
