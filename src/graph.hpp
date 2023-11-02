@@ -55,6 +55,7 @@ class Graph {
     private:
         void calculateMRFClusters();
         std::pair<double, double> calculateVariance();
+        std::pair<double, double> calculateWeightedVariance();
         std::unordered_map<int, NodeMap> adjacency_list;
         std::unordered_map<int, int> constraint_coefficients;
         std::unordered_map<int, int> normalization_marks;

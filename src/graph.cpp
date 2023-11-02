@@ -51,8 +51,8 @@ namespace mrfsat {
                     } else {
                         graph_node_normalized = lit_node + n_lits/2;
                     }
-                    new_adjacency_list[graph_node_normalized][constraint_node + n_lits + to_normalize_amount] = value / (normalizer);
-                    new_adjacency_list[constraint_node + n_lits + to_normalize_amount][graph_node_normalized] = value / (normalizer);
+                    new_adjacency_list[graph_node_normalized][constraint_node + n_lits + to_normalize_amount] = std::abs(value / (normalizer));
+                    new_adjacency_list[constraint_node + n_lits + to_normalize_amount][graph_node_normalized] = std::abs(value / (normalizer));
                 }
                 if (lit_node < 0) {
                     graph_node = -1 * lit_node + n_lits/2;
@@ -60,8 +60,8 @@ namespace mrfsat {
                     graph_node = lit_node;
                 }
 
-                new_adjacency_list[graph_node][constraint_node + n_lits] = value / constraint_coefficients[constraint_node];
-                new_adjacency_list[constraint_node + n_lits][graph_node] = value / constraint_coefficients[constraint_node];
+                new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs(value / constraint_coefficients[constraint_node]);
+                new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs(value / constraint_coefficients[constraint_node]);
             }
         }
         adjacency_list = new_adjacency_list;
@@ -129,10 +129,57 @@ namespace mrfsat {
         return std::make_pair(mean, stdev);
     }
 
+    double sigmoid(double x, double c) {
+        return 1 / (1 + std::exp(-c * x));
+    }
+
+    std::pair<double, double> Graph::calculateWeightedVariance() {
+        std::unordered_map<int, double> communityStrengthA;
+        std::unordered_map<int, double> communityStrengthB;
+        int n = n_lits / 2;
+
+        // Calculate the strength of nodes of type A and B in each community
+        for (const auto& [node, neighbors] : adjacency_list) {
+            int community = community_nodes[node];
+            for (const auto& [neighbor, weight] : neighbors) {
+                if (node < 2 * n && neighbor < 2 * n) {  // Both nodes are of type B
+                    communityStrengthB[community] += weight;
+                } else if (node >= 2 * n && neighbor >= 2 * n) {  // Both nodes are of type A
+                    communityStrengthA[community] += weight;
+                } else {  // One node is of type A, the other of type B
+                    communityStrengthA[community] += weight / 2;
+                    communityStrengthB[community] += weight / 2;
+                }
+            }
+        }
+
+        // Calculate weighted ratios
+        std::vector<double> ratios;
+        for (const auto& [community, strengthB] : communityStrengthB) {
+            double totalStrength = communityStrengthA[community] + strengthB;
+            if (totalStrength > 0) {
+                double ratio = strengthB / totalStrength;
+                ratios.push_back(ratio);
+            }
+        }
+
+        // Calculate mean and standard deviation of ratios
+        double mean = std::accumulate(ratios.begin(), ratios.end(), 0.0) / ratios.size();
+        double variance = std::accumulate(ratios.begin(), ratios.end(), 0.0, [mean](double acc, double x) {
+            return acc + (x - mean) * (x - mean);
+        }) / ratios.size();
+        double stdev = std::sqrt(variance);
+        double c = 10; 
+
+        return {mean, stdev};
+    }
+
     void Graph::calculateGraphData() {
         calculateMRFClusters();
         std::cout << clusters.size() << "," << n_constraints << "," << n_lits / 2 << ",";
         std::pair<double, double> variance_diff = calculateVariance();
+        std::cout << variance_diff.first << "," << variance_diff.second << ",";
+        variance_diff = calculateWeightedVariance();
         std::cout << variance_diff.first << "," << variance_diff.second;
         std::cout << std::endl;
     }
