@@ -88,8 +88,8 @@ namespace mrfsat {
         simpleInitialization();
         pseudoflowPhase1();
         for (int l = 0; l < numNodes; l++) {
-            int cluster = (adjacencyList[l].breakpoint + adjacencyList[l * 2].breakpoint) / 2;
-            if (l == n_var) std::cout << clusters.size() << ",";
+            int cluster = adjacencyList[l].breakpoint;
+            if (l == n_lits) std::cout << clusters.size() << ",";
             if(clusters.find(cluster) == clusters.end()) {
                 clusters[cluster] = std::vector<int>();
             }
@@ -106,10 +106,10 @@ namespace mrfsat {
         int n = n_lits / 2;
         // Count the frequency of nodes in each community for type A and type B
         for (int i = 0; i < 2 * n; ++i) {
-            communityCountB[community_nodes[i]]++;
+            communityWeightB[community_nodes[i]] += nodeWeights.at(i);
         }
         for (unsigned long i = 2 * n; i < community_nodes.size(); ++i) {
-            communityCountA[community_nodes[i]]++;
+            communityWeightA[community_nodes[i]] += nodeWeights.at(i);
         }
 
         // for each community in B get the proportion of elemnts that are from B and from Aa and calculate the ratio
