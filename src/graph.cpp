@@ -28,12 +28,33 @@ namespace mrfsat {
         constraint_coefficients[constraint_id] = constraint_coefficient;
     }
 
+    void Graph::updateAdjacencyList(std::unordered_map<int, NodeMap>& new_adjacency_list, int graph_node, int constraint_node, int value, int divisor, bool isEqualized) {
+        if (divisor != 0) {
+            new_adjacency_list[graph_node][constraint_node + n_lits + (isEqualized ? to_normalize_amount : 0)] = std::abs(value / divisor);
+            new_adjacency_list[constraint_node + n_lits + (isEqualized ? to_normalize_amount : 0)][graph_node] = std::abs(value / divisor);
+        } else {
+            new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs((value + 1) / (divisor + 1));
+            new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs((value + 1) / (divisor + 1));
+        }
+    }
+
+    int Graph::getGraphNode(int lit_node) {
+        if (lit_node < 0) {
+            return -1 * lit_node + n_lits / 2;
+        } else {
+            return lit_node;
+        }
+    }
+
     void Graph::buildFromConstraints() {
         std::unordered_map<int, NodeMap> new_adjacency_list;
         int normalizer = 0;
         for (auto& [constraint_node, lit_nodes]: adjacency_list) {
-             auto it = normalization_marks.find(constraint_node);
-            if (it != normalization_marks.end() && it->second == 1){
+            auto it = normalization_marks.find(constraint_node);
+            bool isEqualized = it != normalization_marks.end() && it->second == 1;
+            
+            if (isEqualized) {
+                normalizer = 0;
                 for (const auto& pair : lit_nodes) {
                     normalizer += pair.second;
                 }
@@ -41,39 +62,21 @@ namespace mrfsat {
                 to_normalize_amount--;
                 n_constraints += 1;
             }
+
             for (auto& [lit_node, value]: lit_nodes) {
-                int graph_node;
-                auto it = normalization_marks.find(constraint_node);
-                if (it != normalization_marks.end() && it->second == 1) {
-                    int graph_node_normalized;
-                    if (lit_node < 0) {
-                        graph_node_normalized = -1 * lit_node;
-                    } else {
-                        graph_node_normalized = lit_node + n_lits/2;
-                    }
-                    if (normalizer != 0) {
-                        new_adjacency_list[graph_node_normalized][constraint_node + n_lits + to_normalize_amount] = std::abs(value / (normalizer));
-                        new_adjacency_list[constraint_node + n_lits + to_normalize_amount][graph_node_normalized] = std::abs(value / (normalizer));
-                    } else {
-                        new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs((value  + 1) / (normalizer + 1));
-                        new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs((value + 1) /(normalizer + 1));
-                    }
+                int graph_node = getGraphNode(lit_node);
+
+                if (isEqualized) {
+                    updateAdjacencyList(new_adjacency_list, graph_node, constraint_node, value, normalizer, true);
+                    updateAdjacencyList(new_adjacency_list, graph_node, constraint_node, value, constraint_coefficients[constraint_node], false);
                 }
-                if (lit_node < 0) {
-                    graph_node = -1 * lit_node + n_lits/2;
-                } else {
-                    graph_node = lit_node;
-                }
-                if (constraint_coefficients[constraint_node] != 0){ 
-                    new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs(value / constraint_coefficients[constraint_node]);
-                    new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs(value / constraint_coefficients[constraint_node]);
-                } else {
-                    new_adjacency_list[graph_node][constraint_node + n_lits] = std::abs((value  + 1) / (constraint_coefficients[constraint_node] + 1));
-                    new_adjacency_list[constraint_node + n_lits][graph_node] = std::abs((value + 1) /(constraint_coefficients[constraint_node] + 1));
+                else {
+                    updateAdjacencyList(new_adjacency_list, graph_node, constraint_node, value, constraint_coefficients[constraint_node], false);
                 }
             }
         }
-        adjacency_list = new_adjacency_list;
+
+        adjacency_list = std::move(new_adjacency_list);
     }
 
     void Graph::updateLiteralsAmount(int new_number) {
@@ -185,8 +188,6 @@ namespace mrfsat {
         calculateMRFClusters();
         std::cout << clusters.size() << "," << n_constraints << "," << n_lits / 2 << ",";
         std::pair<double, double> variance_diff = calculateVariance();
-        std::cout << variance_diff.first << "," << variance_diff.second << ",";
-        variance_diff = calculateWeightedVariance();
         std::cout << variance_diff.first << "," << variance_diff.second;
         std::cout << std::endl;
     }

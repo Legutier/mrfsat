@@ -49,6 +49,8 @@ class Graph {
         void updateLiteralsAmount(int new_number);
         void setConstraintsNumber(int new_n_constraints) {n_constraints = new_n_constraints;}
         void calculateGraphData();
+        void updateAdjacencyList(std::unordered_map<int, NodeMap>& new_adjacency_list, int graph_node, int constraint_node, int value, int divisor, bool isNormalized);
+        int getGraphNode(int lit_node);
         void NormalizeEqualConstraint(int constraint_id);
         std::vector<int> community_nodes;
         std::unordered_map<int, std::vector<int> > clusters;

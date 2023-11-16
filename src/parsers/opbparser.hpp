@@ -41,6 +41,7 @@ class OPBParser {
     public:
         OPBParser(Graph& g) : graph(g) {
             line_number = 1;
+            max_variable_id = 0;
         }
         void parseFile(std::ifstream &file_name);
     private:
