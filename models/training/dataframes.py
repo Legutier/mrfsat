@@ -89,3 +89,31 @@ def read_and_format_satzilla_dataframe(csv_route: str) -> pandas.DataFrame:
     satzilla_dataframe.drop_duplicates(subset=["name"], inplace=True)
     satzilla_dataframe.dropna(inplace=True)
     return satzilla_dataframe
+
+
+def normalize_dataframes_by_instances(dataframe_a: pandas.DataFrame, dataframe_b: pandas.DataFrame) -> tuple[pandas.DataFrame, pandas.DataFrame]:
+    common_names = set(dataframe_a['name']).intersection(set(dataframe_b['name']))
+    dataframe_a = dataframe_a[dataframe_a['name'].isin(common_names)]
+    dataframe_b = dataframe_b[dataframe_b['name'].isin(common_names)]
+    return dataframe_a, dataframe_b
+
+
+def soft_balance_dataframe_by_sat_status_and_size(dataframe: pandas.DataFrame, bins_to_balance: int = 4) -> tuple[pandas.DataFrame, pandas.DataFrame]:
+    dataframe['formula_constraints_bin'] = pandas.qcut(dataframe['formula_constraints'], q=bins_to_balance, labels=range(bins_to_balance))
+    dataframe['variables_bin'] = pandas.qcut(dataframe['variables'], q=bins_to_balance, labels=range(bins_to_balance))
+    dataframe['combined_bin'] = dataframe['formula_constraints_bin'].astype(str) + "_" + dataframe['variables_bin'].astype(str)
+    sub_dataframes = []
+
+    for combined_bin in dataframe['combined_bin'].unique():
+        subset = dataframe[dataframe['combined_bin'] == combined_bin]
+        sat_count = len(subset[subset['is_sat'] == 1])
+        unsat_count = len(subset[subset['is_sat'] == 0])
+        min_count = min(sat_count, unsat_count)
+        balanced_subset_sat = subset[subset['is_sat'] == 1].sample(min_count, replace=False)
+        balanced_subset_unsat = subset[subset['is_sat'] == 0].sample(min_count, replace=False)
+        sub_dataframes.append(balanced_subset_sat)
+        sub_dataframes.append(balanced_subset_unsat)
+
+    balanced_dataframe = pandas.concat(sub_dataframes).drop(columns=['formula_constraints_bin', 'variables_bin', 'combined_bin'])
+
+    return balanced_dataframe
