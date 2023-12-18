@@ -29,8 +29,7 @@ FEATURES = [
     "average_freedom",
     "std_dev_freedom",
     "ratio",
-    "average_strength",
-    "std_dev_strength",
+    "formula_ratio",
 ]
 MODEL_NAME = "random_forest_model.joblib"
 DATA_KEYS = (
@@ -40,8 +39,6 @@ DATA_KEYS = (
     "total_variables",
     "average_freedom",
     "std_dev_freedom",
-    "average_strength",
-    "std_dev_strength",
 )
 
 
@@ -63,9 +60,10 @@ def get_predicting_data(filename: str) -> dict[str, int | float | str]:
     mapping["total_clauses"] = int(mapping["total_clauses"])
     mapping["total_clusters"] = int(mapping["total_clusters"])
     mapping["variable_clusters"] = int(mapping["variable_clusters"])
-    mapping["average_strength"] = float(mapping["average_strength"])
-    mapping["std_dev_strength"] = float(mapping["std_dev_strength"])
+    mapping["cv_ratio"] = mapping["total_variables"] / mapping["total_clauses"]
+    mapping["ratio_norm"] = min(mapping["cv_ratio"], 1)
     mapping["ratio"] = mapping["variable_clusters"] / mapping["total_clusters"]
+    mapping["formula_ratio"] = (mapping["total_clusters"] - mapping["variable_clusters"]) / mapping["total_clauses"]
     mapping["variables_per_clusters"] = mapping["total_variables"] / mapping["variable_clusters"]
     mapping["clauses_per_cluster"] = mapping["total_clauses"] / mapping["total_clusters"]
     return mapping
@@ -106,7 +104,8 @@ if __name__ == "__main__":
             try:
                 filename = os.path.join(args.dir, file)
                 make_prediction(filename)
-            except KeyError:
+            except KeyError as e:
+                print(e)
                 continue
     else:
         print("Error: no filename provided")
