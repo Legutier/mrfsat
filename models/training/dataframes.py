@@ -98,6 +98,16 @@ def normalize_dataframes_by_instances(dataframe_a: pandas.DataFrame, dataframe_b
     return dataframe_a, dataframe_b
 
 
+def create_extra_mrfsat_features(mrfsat_dataframe: pandas.DataFrame) -> None:
+    mrfsat_dataframe["ratio"] = mrfsat_dataframe["variable_clusters"] / mrfsat_dataframe["total_clusters"]
+    mrfsat_dataframe["ratio_norm"] = mrfsat_dataframe["cv_ratio_r"].apply(lambda x: 1 if x > 1 else x)
+    mrfsat_dataframe["var_intersection"] = mrfsat_dataframe["std_dev_intersection"] * mrfsat_dataframe["std_dev_intersection"]
+    mrfsat_dataframe["formula_ratio"] = (
+        (mrfsat_dataframe["total_clusters"] -  mrfsat_dataframe["variable_clusters"])
+        / mrfsat_dataframe["total_clusters"]
+    )
+
+
 def soft_balance_dataframe_by_sat_status_and_size(dataframe: pandas.DataFrame, bins_to_balance: int = 4) -> tuple[pandas.DataFrame, pandas.DataFrame]:
     dataframe['formula_constraints_bin'] = pandas.qcut(dataframe['formula_constraints'], q=bins_to_balance, labels=range(bins_to_balance))
     dataframe['variables_bin'] = pandas.qcut(dataframe['variables'], q=bins_to_balance, labels=range(bins_to_balance))
